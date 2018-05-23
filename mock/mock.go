@@ -1,3 +1,9 @@
+// aws lambda authorizer mock
+// Handle provides an API Gateway Custom Authorizers.
+// This is not a production code and is just provided as an example.
+//
+// Please refer to the full documentation for more information:
+// https://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html
 package main
 
 import (
@@ -5,42 +11,20 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"context"
 	"errors"
+	"github.com/go-fast/lambda-auth/auth"
 )
 
-type Statement struct {
-	Action   string
-	Effect   string
-	Resource string
-}
-
-type PolicyDocument struct {
-	Version   string
-	Statement []*Statement
-}
-
-type Context struct {
-	StringKey  string `json:"StringKey,omitempty"`
-	NumberKey  int64  `json:"NumberKey,omitempty"`
-	BooleanKey bool   `json:"BooleanKey,omitempty"`
-}
-
-type AuthResponse struct {
-	PrincipalId    string          `json:"principalId,omitempty"`
-	PolicyDocument *PolicyDocument `json:"policyDocument,omitempty"`
-	Context        *Context        `json:"context,omitempty"`
-}
-
-func generatePolicy(principalId string, effect string, resource string) *AuthResponse {
-	authResponse := &AuthResponse{}
+func generatePolicy(principalId string, effect string, resource string) *auth.AuthResponse {
+	authResponse := &auth.AuthResponse{}
 	authResponse.PrincipalId = principalId
 
 	if len(effect) > 0 && len(resource) > 0 {
-		policyDocument := &PolicyDocument{}
+		policyDocument := &auth.PolicyDocument{}
 		authResponse.PolicyDocument = policyDocument
 
 		policyDocument.Version = "2012-10-17" // default version
 
-		statementOne := &Statement{}
+		statementOne := &auth.Statement{}
 		statementOne.Action = "execute-api:Invoke" // default action
 		statementOne.Effect = effect
 		statementOne.Resource = resource
@@ -48,7 +32,7 @@ func generatePolicy(principalId string, effect string, resource string) *AuthRes
 		policyDocument.Statement = append(policyDocument.Statement, statementOne)
 	}
 
-	authResponse.Context = &Context{}
+	authResponse.Context = &auth.Context{}
 	// Can optionally return a context object of your choosing.
 	authResponse.Context.StringKey = "stringval"
 	authResponse.Context.NumberKey = 123
@@ -57,24 +41,7 @@ func generatePolicy(principalId string, effect string, resource string) *AuthRes
 	return authResponse
 }
 
-// AuthHandle provides an API Gateway Custom Authorizers.
-// This is not a production code and is just provided as an example.
-//
-// Please refer to the full documentation for more information:
-// https://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html
-
-type Authorizer struct {
-	AuthorizationToken string
-	MethodArn          string
-	Type               string
-}
-
-// Handle provides an API Gateway Custom Authorizers.
-// This is not a production code and is just provided as an example.
-//
-// Please refer to the full documentation for more information:
-// https://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html
-func Handle(ctx context.Context, evt *Authorizer) (*AuthResponse, error) {
+func Handle(ctx context.Context, evt *auth.Authorizer) (*auth.AuthResponse, error) {
 	switch token := strings.ToLower(evt.AuthorizationToken); token {
 	case "allow":
 		return generatePolicy("user", "Allow", evt.MethodArn), nil
