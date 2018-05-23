@@ -8,6 +8,7 @@ import (
 	"testing"
 	"fmt"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHandle(t *testing.T) {
@@ -17,13 +18,10 @@ func TestHandle(t *testing.T) {
 		Type:               "TOKEN",
 	}
 	res, err := Handle(nil, auth)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	assert.Nil(t, err, err)
 
-	fmt.Println(res)
+	assert.Equal(t, "Allow", res.PolicyDocument.Statement[0].Effect, "Effect should be Allow")
+
 	response, err := json.Marshal(res)
 	fmt.Println(string(response))
-
 }
