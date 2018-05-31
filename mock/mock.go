@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"context"
 	"errors"
-	"github.com/go-fast/lambda-auth/auth"
+	"github.com/go2s/ala/auth"
 )
 
 func generatePolicy(principalId string, effect string, resource string) *auth.AuthResponse {

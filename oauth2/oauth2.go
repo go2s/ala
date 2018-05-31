@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"context"
 	"errors"
-	"github.com/go-fast/lambda-auth/auth"
+	"github.com/go2s/ala/auth"
 	"gopkg.in/oauth2.v3/models"
 	"io/ioutil"
 	"net/http"
