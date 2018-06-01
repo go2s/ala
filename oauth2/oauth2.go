@@ -19,7 +19,16 @@ import (
 	"net/http"
 	"log"
 	"encoding/json"
+	"strings"
 )
+
+func ResetResourceScope(resource string, authPrefix string, authReplace string) string {
+	idx := strings.Index(resource, authPrefix)
+	if idx > 0 {
+		return resource[:idx] + authReplace
+	}
+	return resource
+}
 
 func generatePolicy(principalId string, effect string, resource string) *auth.AuthResponse {
 	authResponse := &auth.AuthResponse{}
@@ -34,57 +43,13 @@ func generatePolicy(principalId string, effect string, resource string) *auth.Au
 		statementOne := &auth.Statement{}
 		statementOne.Action = "execute-api:Invoke" // default action
 		statementOne.Effect = effect
-		statementOne.Resource = resource
+		statementOne.Resource = ResetResourceScope(resource, authResPrefix, authResReplace)
+		log.Printf("policy: %v, %v\n", statementOne.Effect, statementOne.Resource)
 
 		policyDocument.Statement = append(policyDocument.Statement, statementOne)
 	}
 
 	return authResponse
-}
-
-func Handle(ctx context.Context, evt *auth.Authorizer) (*auth.AuthResponse, error) {
-	token := evt.AuthorizationToken
-	log.Printf("auth token: %v\n", token)
-
-	req, err := http.NewRequest("GET", oauth2ValidUrl, nil)
-	if err != nil {
-		log.Println(err)
-		return deny(evt)
-	}
-	req.Header.Set("Authorization", token)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println(err)
-		return deny(evt)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("auth status: %v\n", resp.StatusCode)
-		return unauthorized()
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("auth failed err:%v\n", err)
-		return deny(evt)
-	}
-
-	t := &models.Token{}
-	err = json.Unmarshal(body, t)
-	if err != nil {
-		log.Printf("auth response parse err:%v\n", err)
-		return deny(evt)
-	}
-
-	principalId := t.GetUserID()
-	if principalId == "" {
-		log.Printf("auth response:%v\n", string(body))
-		return deny(evt)
-	}
-	log.Printf("auth principalId:%v\n", principalId)
-	return allow(evt, principalId)
 }
 
 func allow(evt *auth.Authorizer, principalId string) (*auth.AuthResponse, error) {
@@ -95,8 +60,61 @@ func unauthorized() (*auth.AuthResponse, error) {
 	return nil, errors.New("Unauthorized") // Return a 401 Unauthorized response
 }
 
+func internalError() (*auth.AuthResponse, error) {
+	return nil, errors.New("InternalServerError")
+}
+
 func deny(evt *auth.Authorizer) (*auth.AuthResponse, error) {
 	return generatePolicy("", "Deny", evt.MethodArn), nil
+}
+
+func Handle(ctx context.Context, evt *auth.Authorizer) (*auth.AuthResponse, error) {
+	token := evt.AuthorizationToken
+	log.Printf("auth request: %v, %v, %v \n", token, evt.MethodArn, evt.Type)
+
+	if token == "" {
+		return unauthorized()
+	}
+
+	req, err := http.NewRequest("GET", oauth2ValidUrl, nil)
+	if err != nil {
+		log.Println(err)
+		return internalError()
+	}
+	req.Header.Set("Authorization", token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println(err)
+		return internalError()
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("auth status: %v\n", resp.StatusCode)
+		return unauthorized()
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("auth failed err:%v\n", err)
+		return internalError()
+	}
+
+	t := &models.Token{}
+	err = json.Unmarshal(body, t)
+	if err != nil {
+		log.Printf("auth response parse err:%v\n", err)
+		return internalError()
+	}
+
+	principalId := t.GetUserID()
+	if principalId == "" {
+		log.Printf("auth response:%v\n", string(body))
+		return deny(evt)
+	}
+	log.Printf("auth principalId:%v\n", principalId)
+	return allow(evt, principalId)
 }
 
 func main() {

@@ -5,4 +5,8 @@
 
 package main
 
-const oauth2ValidUrl = "http://127.0.0.1:9096/dev/oauth2/valid"
+const (
+	oauth2ValidUrl = "http://127.0.0.1:9096/dev/oauth2/valid"
+	authResPrefix  = "/dev/"
+	authResReplace = "/dev/*"
+)
