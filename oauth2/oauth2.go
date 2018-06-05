@@ -14,12 +14,12 @@ import (
 	"context"
 	"errors"
 	"github.com/go2s/ala/auth"
-	"gopkg.in/oauth2.v3/models"
 	"io/ioutil"
 	"net/http"
 	"log"
 	"encoding/json"
 	"strings"
+	"github.com/go2s/o2x"
 )
 
 func ResetResourceScope(resource string, authPrefix string, authReplace string) string {
@@ -101,14 +101,14 @@ func Handle(ctx context.Context, evt *auth.Authorizer) (*auth.AuthResponse, erro
 		return internalError()
 	}
 
-	t := &models.Token{}
+	t := &o2x.ValidResponse{}
 	err = json.Unmarshal(body, t)
 	if err != nil {
 		log.Printf("auth response parse err:%v\n", err)
 		return internalError()
 	}
 
-	principalId := t.GetUserID()
+	principalId := t.UserID
 	if principalId == "" {
 		log.Printf("auth response:%v\n", string(body))
 		return deny(evt)
