@@ -23,6 +23,7 @@ build-prod:
 	GOOS=linux go build -tags prod -ldflags='-w -s $(LDFLAGS)' -o $(HANDLER)
 
 zip:
+	$(RM) $(PACKAGE).zip
 	zip $(PACKAGE).zip $(HANDLER)
 
 clean:
