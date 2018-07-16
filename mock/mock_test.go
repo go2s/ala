@@ -9,10 +9,11 @@ import (
 	"fmt"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
+	"github.com/go2s/ala/auth"
 )
 
 func TestHandle(t *testing.T) {
-	auth := &Authorizer{
+	auth := &auth.Authorizer{
 		AuthorizationToken: "allow",
 		MethodArn:          "arn:aws-cn:execute-api:cn-north-1:638953167227:gxa3v62znk/null/GET/",
 		Type:               "TOKEN",

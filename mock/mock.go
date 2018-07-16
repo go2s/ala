@@ -34,9 +34,8 @@ func generatePolicy(principalId string, effect string, resource string) *auth.Au
 
 	authResponse.Context = &auth.Context{}
 	// Can optionally return a context object of your choosing.
-	authResponse.Context.StringKey = "stringval"
-	authResponse.Context.NumberKey = 123
-	authResponse.Context.BooleanKey = true
+	authResponse.Context.ClientID = "client1"
+	authResponse.Context.Scope = "read,write"
 
 	return authResponse
 }

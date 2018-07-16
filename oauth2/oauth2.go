@@ -30,7 +30,7 @@ func ResetResourceScope(resource string, authPrefix string, authReplace string) 
 	return resource
 }
 
-func generatePolicy(principalId string, effect string, resource string) *auth.AuthResponse {
+func generatePolicy(principalId, clientID, scope string, effect string, resource string) *auth.AuthResponse {
 	authResponse := &auth.AuthResponse{}
 	authResponse.PrincipalId = principalId
 
@@ -49,11 +49,15 @@ func generatePolicy(principalId string, effect string, resource string) *auth.Au
 		policyDocument.Statement = append(policyDocument.Statement, statementOne)
 	}
 
+	authResponse.Context = &auth.Context{}
+	authResponse.Context.ClientID = clientID
+	authResponse.Context.Scope = scope
+
 	return authResponse
 }
 
-func allow(evt *auth.Authorizer, principalId string) (*auth.AuthResponse, error) {
-	return generatePolicy(principalId, "Allow", evt.MethodArn), nil
+func allow(evt *auth.Authorizer, principalId, clientID, scope string) (*auth.AuthResponse, error) {
+	return generatePolicy(principalId, clientID, scope, "Allow", evt.MethodArn), nil
 }
 
 func unauthorized() (*auth.AuthResponse, error) {
@@ -65,7 +69,7 @@ func internalError() (*auth.AuthResponse, error) {
 }
 
 func deny(evt *auth.Authorizer) (*auth.AuthResponse, error) {
-	return generatePolicy("", "Deny", evt.MethodArn), nil
+	return generatePolicy("", "", "", "Deny", evt.MethodArn), nil
 }
 
 func Handle(ctx context.Context, evt *auth.Authorizer) (*auth.AuthResponse, error) {
@@ -113,8 +117,8 @@ func Handle(ctx context.Context, evt *auth.Authorizer) (*auth.AuthResponse, erro
 		log.Printf("auth response:%v\n", string(body))
 		return deny(evt)
 	}
-	log.Printf("auth principalId:%v\n", principalId)
-	return allow(evt, principalId)
+	log.Printf("auth info:%v\n", t)
+	return allow(evt, principalId, t.ClientID, t.Scope)
 }
 
 func main() {

@@ -16,9 +16,8 @@ type PolicyDocument struct {
 }
 
 type Context struct {
-	StringKey  string `json:"StringKey,omitempty"`
-	NumberKey  int64  `json:"NumberKey,omitempty"`
-	BooleanKey bool   `json:"BooleanKey,omitempty"`
+	ClientID string `json:"clientID,omitempty"`
+	Scope    string `json:"Scope,omitempty"`
 }
 
 type AuthResponse struct {
