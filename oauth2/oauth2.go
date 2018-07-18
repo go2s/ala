@@ -50,7 +50,7 @@ func generatePolicy(principalId, clientID, scope string, effect string, resource
 	}
 
 	authResponse.Context = &auth.Context{}
-	authResponse.Context.ClientID = clientID
+	authResponse.Context.ClientId = clientID
 	authResponse.Context.Scope = scope
 
 	return authResponse

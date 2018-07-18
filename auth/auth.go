@@ -16,8 +16,8 @@ type PolicyDocument struct {
 }
 
 type Context struct {
-	ClientID string `json:"clientID,omitempty"`
-	Scope    string `json:"Scope,omitempty"`
+	ClientId string `json:"clientId,omitempty"`
+	Scope    string `json:"scope,omitempty"`
 }
 
 type AuthResponse struct {
