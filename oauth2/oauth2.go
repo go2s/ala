@@ -6,7 +6,35 @@
 //
 // Please refer to the full documentation for more information:
 // https://docs.aws.amazon.com/apigateway/latest/developerguide/use-custom-authorizer.html
-
+// ---------------------
+// lambda received authorizer header information:
+// {
+//    "accountId": "638953167227",
+//    "resourceId": "666khp",
+//    "stage": "_live_qa",
+//    "requestId": "77e31d8f-8a36-11e8-aec2-4b0469ed4b35",
+//    "identity": {
+//        "cognitoIdentityPoolId": "",
+//        "accountId": "",
+//        "cognitoIdentityId": "",
+//        "caller": "",
+//        "apiKey": "",
+//        "sourceIp": "117.30.209.12",
+//        "cognitoAuthenticationType": "",
+//        "cognitoAuthenticationProvider": "",
+//        "userArn": "",
+//        "userAgent": "PostmanRuntime/7.1.5",
+//        "user": ""
+//    },
+//    "resourcePath": "/a/{proxy+}",
+//    "authorizer": {
+//        "scope": "manage",
+//        "clientId": "my_client",
+//        "principalId": "5b39df0621c4694cc8d270ba"
+//    },
+//    "httpMethod": "GET",
+//    "apiId": "333d27kbbe"
+//}
 package main
 
 import (
